@@ -21,19 +21,20 @@
             height: 100%;
         }
 
+        /* Gaya untuk setiap layar utama */
         .scene {
             position: absolute;
             width: 100%;
             height: 100%;
             display: none;
             opacity: 0;
-            transition: opacity 0.5s ease-in-out;
+            transition: opacity 0.6s ease-in-out;
         }
 
         .scene img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: cover; /* Agar gambar memenuhi layar */
         }
 
         .scene.active {
@@ -41,125 +42,119 @@
             opacity: 1;
         }
 
-        /* Popup Fitur Tidak Tersedia */
+        /* Area tombol login transparan */
+        #login-btn {
+            position: absolute;
+            bottom: 8%; /* Posisi disesuaikan dengan gambar login.jpeg */
+            left: 5%;
+            width: 90%;
+            height: 60px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        /* Gaya Popup Muncul ke Atas */
         #popup-notif {
             position: fixed;
-            bottom: -100%;
+            bottom: -100%; /* Sembunyi di bawah layar */
             left: 0;
             width: 100%;
             height: 100%;
             background: white;
             z-index: 100;
-            transition: bottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+            transition: bottom 0.5s cubic-bezier(0.25, 1, 0.5, 1);
         }
 
         #popup-notif img {
             width: 100%;
             height: 100%;
-            object-fit: contain;
+            object-fit: contain; /* Agar seluruh gambar notif terlihat jelas */
         }
 
         #popup-notif.show {
-            bottom: 0;
+            bottom: 0; /* Meluncur naik ke posisi normal */
         }
 
-        /* Tombol Invisible */
-        #login-btn {
+        /* Tombol untuk menutup popup (X) */
+        #close-notif {
             position: absolute;
-            bottom: 8%;
-            left: 5%;
-            width: 90%;
-            height: 65px;
+            top: 10px;
+            right: 10px;
+            width: 50px;
+            height: 50px;
             background: transparent;
             border: none;
-            z-index: 10;
-        }
-
-        /* Instruksi melayang di awal */
-        #hint {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            background: rgba(0,0,0,0.6);
-            padding: 15px 25px;
-            border-radius: 30px;
-            z-index: 50;
-            pointer-events: none;
-            font-weight: bold;
+            cursor: pointer;
+            z-index: 110;
         }
     </style>
 </head>
-<body onclick="startApp()">
-
-    <div id="hint">Ketuk untuk mulai Full Screen</div>
+<body>
 
     <div class="app-container">
         <div id="s1" class="scene active">
-            <img src="1000093572.jpeg">
+            <img src="splash1.jpeg">
         </div>
 
         <div id="s2" class="scene">
-            <img src="1000093573.jpeg">
+            <img src="splash2.jpeg">
         </div>
 
         <div id="s3" class="scene">
-            <img src="1000093574.jpeg">
-            <button id="login-btn" onclick="goDash(event)"></button>
+            <img src="login.jpeg">
+            <button id="login-btn" onclick="keDashboard()"></button>
         </div>
 
-        <div id="s4" class="scene" onclick="showPopup()">
-            <img src="1000093660.jpeg">
+        <div id="s4" class="scene" onclick="munculNotif()">
+            <img src="dashboard.jpeg">
         </div>
     </div>
 
-    <div id="popup-notif" onclick="this.classList.remove('show')">
-        <img src="1000093667.jpeg">
+    <div id="popup-notif">
+        <button id="close-notif" onclick="tutupNotif()"></button>
+        <img src="fitur-tidak-tersedia.jpeg">
     </div>
 
     <script>
-        const scene1 = document.getElementById('s1');
-        const scene2 = document.getElementById('s2');
-        const scene3 = document.getElementById('s3');
-        const scene4 = document.getElementById('s4');
-        const hint = document.getElementById('hint');
-        const popup = document.getElementById('popup-notif');
+        const sc1 = document.getElementById('s1');
+        const sc2 = document.getElementById('s2');
+        const sc3 = document.getElementById('s3');
+        const sc4 = document.getElementById('s4');
+        const pop = document.getElementById('popup-notif');
 
-        let hasStarted = false;
-
-        function startApp() {
-            if (hasStarted) return;
-            
-            // AKTIFKAN FULLSCREEN
-            const doc = document.documentElement;
-            if (doc.requestFullscreen) doc.requestFullscreen();
-            else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen();
-
-            hint.style.display = 'none';
-            hasStarted = true;
-
-            // MULAI TIMER
+        // OTOMATIS JALAN SAAT HALAMAN DIBUKA
+        window.onload = function() {
+            // Tampilkan splash1 selama 5 detik
             setTimeout(() => {
-                transition(scene1, scene2);
+                transisi(sc1, sc2);
+                
+                // Tampilkan splash2 selama 5 detik
                 setTimeout(() => {
-                    transition(scene2, scene3);
+                    transisi(sc2, sc3);
                 }, 5000);
+
             }, 5000);
+        };
+
+        function transisi(lama, baru) {
+            lama.classList.remove('active');
+            setTimeout(() => {
+                baru.classList.add('active');
+            }, 50);
         }
 
-        function transition(oldS, newS) {
-            oldS.classList.remove('active');
-            setTimeout(() => { newS.classList.add('active'); }, 50);
+        function keDashboard() {
+            transisi(sc3, sc4);
         }
 
-        function goDash(e) {
-            e.stopPropagation();
-            transition(scene3, scene4);
+        function munculNotif() {
+            pop.classList.add('show');
         }
 
-        function showPopup() {
-            popup.classList.add('show');
+        function tutupNotif() {
+            pop.classList.remove('show');
         }
     </script>
 </body>
