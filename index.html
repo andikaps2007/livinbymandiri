@@ -3,34 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Livin Simulation Fullscreen</title>
+    <title>Livin' by Mandiri Simulation</title>
     <style>
+        /* Dasar tampilan mobile-first */
         body, html {
             margin: 0;
             padding: 0;
             height: 100%;
             width: 100%;
             overflow: hidden;
-            background-color: #000;
-            font-family: sans-serif;
+            background-color: #2b91ff; /* Warna biru Mandiri */
+            font-family: 'Segoe UI', sans-serif;
         }
 
         .app-container {
             position: relative;
             width: 100%;
             height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
+        /* Scene untuk setiap gambar */
         .scene {
             position: absolute;
             width: 100%;
             height: 100%;
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
             display: none;
             opacity: 0;
-            transition: opacity 0.8s ease-in-out;
+            transition: opacity 0.6s ease-in-out;
+        }
+
+        /* Menampilkan gambar agar pas di layar tanpa terpotong */
+        .scene img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* Gambar akan menyesuaikan tanpa stretch */
         }
 
         .scene.active {
@@ -38,141 +47,102 @@
             opacity: 1;
         }
 
-        /* Identitas Gambar */
-        #scene-splash1 { background-image: url('1000093572.jpg'); cursor: pointer; }
-        #scene-splash2 { background-image: url('1000093573.jpg'); }
-        #scene-login { background-image: url('1000093574.jpg'); }
-        #scene-dashboard { background-image: url('1000093660.jpg'); }
-
-        /* Tombol Transparan Login */
-        #login-btn {
+        /* Overlay Instruksi Awal */
+        #start-overlay {
             position: absolute;
-            bottom: 10%;
-            left: 5%;
-            width: 90%;
-            height: 50px;
-            background: transparent;
-            border: none;
+            z-index: 100;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
             cursor: pointer;
         }
 
-        /* Pesan instruksi awal */
-        #instruction {
+        /* Area klik tombol login (posisi disesuaikan secara estimasi) */
+        #login-trigger {
             position: absolute;
-            top: 20px;
-            width: 100%;
-            text-align: center;
-            color: white;
-            background: rgba(0,0,0,0.5);
-            z-index: 100;
-            padding: 10px 0;
+            bottom: 5%;
+            width: 90%;
+            height: 12%;
+            left: 5%;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .hint {
+            font-size: 14px;
+            margin-top: 10px;
+            opacity: 0.8;
         }
     </style>
 </head>
-<body onclick="enableFullScreen()">
+<body>
 
-    <div id="instruction">Klik di mana saja untuk mulai & Full Screen</div>
+    <div id="start-overlay" onclick="launchApp()">
+        <h1>Klik untuk Masuk</h1>
+        <p class="hint">(Otomatis Full Screen & Splash 10 Detik)</p>
+    </div>
 
     <div class="app-container">
-        <div id="scene-splash1" class="scene active"></div>
-
-        <div id="scene-splash2" class="scene"></div>
-
-        <div id="scene-login" class="scene">
-            <button id="login-btn" onclick="masukDashboard(event)"></button>
+        <div id="s1" class="scene active"><img src="splash1.jpg"></div>
+        <div id="s2" class="scene"><img src="splash2.jpg"></div>
+        <div id="s-login" class="scene">
+            <img src="login.jpg">
+            <button id="login-trigger" onclick="goDashboard(event)"></button>
         </div>
-
-        <div id="scene-dashboard" class="scene" onclick="tampilkanPerbaikan()"></div>
+        <div id="s-dash" class="scene" onclick="showError()"><img src="dashboard.jpg"></div>
     </div>
 
     <script>
-        const s1 = document.getElementById('scene-splash1');
-        const s2 = document.getElementById('scene-splash2');
-        const login = document.getElementById('scene-login');
-        const dash = document.getElementById('scene-dashboard');
-        const instruction = document.getElementById('instruction');
+        const scene1 = document.getElementById('s1');
+        const scene2 = document.getElementById('s2');
+        const sceneLogin = document.getElementById('s-login');
+        const sceneDash = document.getElementById('s-dash');
+        const overlay = document.getElementById('start-overlay');
 
-        let isStarted = false;
+        function launchApp() {
+            // 1. Masuk Mode Full Screen
+            const doc = document.documentElement;
+            if (doc.requestFullscreen) doc.requestFullscreen();
+            else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen();
 
-        // FUNGSI FULLSCREEN
-        function enableFullScreen() {
-            if (!isStarted) {
-                const elem = document.documentElement;
-                if (elem.requestFullscreen) {
-                    elem.requestFullscreen();
-                } else if (elem.webkitRequestFullscreen) { /* Safari */
-                    elem.webkitRequestFullscreen();
-                } else if (elem.msRequestFullscreen) { /* IE11 */
-                    elem.msRequestFullscreen();
-                }
-                
-                instruction.style.display = 'none';
-                startApp();
-                isStarted = true;
-            }
-        }
+            // 2. Hilangkan Overlay
+            overlay.style.display = 'none';
 
-        function gantiScene(lama, baru) {
-            lama.classList.remove('active');
+            // 3. Alur Splash Screen
+            // Splash 1 tampil 5 detik lalu ke Splash 2
             setTimeout(() => {
-                baru.classList.add('active');
-            }, 50);
-        }
-
-        // Jalankan transisi splash screen
-        function startApp() {
-            // Gambar 1 tampil selama 5 detik
-            setTimeout(() => {
-                gantiScene(s1, s2);
+                swap(scene1, scene2);
                 
-                // Gambar 2 tampil selama 5 detik
+                // Splash 2 tampil 5 detik lalu ke Halaman Login
                 setTimeout(() => {
-                    gantiScene(s2, login);
+                    swap(scene2, sceneLogin);
                 }, 5000);
 
             }, 5000);
         }
 
-        function masukDashboard(e) {
-            e.stopPropagation(); // Mencegah trigger klik di background
-            gantiScene(login, dash);
-        }
-
-        function tampilkanPerbaikan() {
-            alert("Maaf, sistem sedang dalam perbaikan. Coba lagi nanti.");
-        }
-    </script>
-</body>
-</html>
-    <div id="splash1" class="screen active" style="background-image: url('1.jpeg');"></div>
-
-    <div id="splash2" class="screen" style="background-image: url('2.jpeg');"></div>
-
-    <div id="login-screen" class="screen" style="background-image: url('3.jpeg');">
-        <button id="login-btn" onclick="goToDashboard()"></button>
-    </div>
-
-    <div id="dashboard" class="screen" style="background-image: url('4.jpeg');"></div>
-
-    <script>
-        // Alur otomatis untuk Splash Screen
-        setTimeout(() => {
-            // Pindah dari Splash 1 ke Splash 2
-            document.getElementById('splash1').classList.remove('active');
-            document.getElementById('splash2').classList.add('active');
-
+        function swap(oldScene, newScene) {
+            oldScene.classList.remove('active');
             setTimeout(() => {
-                // Pindah dari Splash 2 ke Login Screen
-                document.getElementById('splash2').classList.remove('active');
-                document.getElementById('login-screen').classList.add('active');
-            }, 1000); // Durasi gambar kedua 1 detik
+                newScene.classList.add('active');
+            }, 50);
+        }
 
-        }, 1000); // Durasi gambar pertama 1 detik
+        function goDashboard(e) {
+            e.stopPropagation(); // Biar tidak trigger klik dashboard
+            swap(sceneLogin, sceneDash);
+        }
 
-        // Fungsi klik tombol login
-        function goToDashboard() {
-            document.getElementById('login-screen').classList.remove('active');
-            document.getElementById('dashboard').classList.add('active');
+        function showError() {
+            alert("Maaf, sistem sedang dalam perbaikan. Silakan coba lagi nanti.");
         }
     </script>
 </body>
