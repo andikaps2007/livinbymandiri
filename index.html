@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Livin Web Simulation</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body, html { height: 100%; overflow: hidden; font-family: sans-serif; }
+
+        .screen {
+            width: 100%;
+            height: 100vh;
+            display: none;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .active { display: block; }
+
+        /* Area Tombol Login Transparan */
+        #login-btn {
+            position: absolute;
+            bottom: 50px; /* Sesuaikan posisi tombol biru di gambar 3 */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 60px;
+            background: rgba(255, 255, 255, 0); /* Transparan */
+            cursor: pointer;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="splash1" class="screen active" style="background-image: url('1.jpg');"></div>
+
+    <div id="splash2" class="screen" style="background-image: url('2.jpg');"></div>
+
+    <div id="login-screen" class="screen" style="background-image: url('3.jpg');">
+        <button id="login-btn" onclick="goToDashboard()"></button>
+    </div>
+
+    <div id="dashboard" class="screen" style="background-image: url('4.jpg');"></div>
+
+    <script>
+        // Alur otomatis untuk Splash Screen
+        setTimeout(() => {
+            // Pindah dari Splash 1 ke Splash 2
+            document.getElementById('splash1').classList.remove('active');
+            document.getElementById('splash2').classList.add('active');
+
+            setTimeout(() => {
+                // Pindah dari Splash 2 ke Login Screen
+                document.getElementById('splash2').classList.remove('active');
+                document.getElementById('login-screen').classList.add('active');
+            }, 1000); // Durasi gambar kedua 1 detik
+
+        }, 1000); // Durasi gambar pertama 1 detik
+
+        // Fungsi klik tombol login
+        function goToDashboard() {
+            document.getElementById('login-screen').classList.remove('active');
+            document.getElementById('dashboard').classList.add('active');
+        }
+    </script>
+</body>
+</html>
