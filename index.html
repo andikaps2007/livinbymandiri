@@ -2,18 +2,18 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Livin' by Mandiri Simulation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Livin Simulation</title>
     <style>
-        /* Dasar tampilan mobile-first */
+        /* CSS untuk memastikan tampilan penuh dan tidak bisa di-scroll */
         body, html {
             margin: 0;
             padding: 0;
             height: 100%;
             width: 100%;
             overflow: hidden;
-            background-color: #2b91ff; /* Warna biru Mandiri */
-            font-family: 'Segoe UI', sans-serif;
+            background-color: #004aad; /* Warna dasar biru */
+            font-family: sans-serif;
         }
 
         .app-container {
@@ -25,21 +25,20 @@
             align-items: center;
         }
 
-        /* Scene untuk setiap gambar */
+        /* Pengaturan gambar agar menutupi layar dengan rapi */
         .scene {
             position: absolute;
             width: 100%;
             height: 100%;
             display: none;
             opacity: 0;
-            transition: opacity 0.6s ease-in-out;
+            transition: opacity 0.5s ease-in-out;
         }
 
-        /* Menampilkan gambar agar pas di layar tanpa terpotong */
         .scene img {
             width: 100%;
             height: 100%;
-            object-fit: contain; /* Gambar akan menyesuaikan tanpa stretch */
+            object-fit: cover; /* Gambar akan memenuhi layar */
         }
 
         .scene.active {
@@ -47,101 +46,107 @@
             opacity: 1;
         }
 
-        /* Overlay Instruksi Awal */
-        #start-overlay {
-            position: absolute;
-            z-index: 100;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
+        /* Overlay Awal karena Browser melarang Fullscreen otomatis tanpa klik */
+        #overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
             color: white;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
+            z-index: 999;
             text-align: center;
             cursor: pointer;
         }
 
-        /* Area klik tombol login (posisi disesuaikan secara estimasi) */
-        #login-trigger {
+        /* Area tombol login transparan (sesuaikan posisi jika perlu) */
+        #login-btn {
             position: absolute;
-            bottom: 5%;
-            width: 90%;
-            height: 12%;
+            bottom: 8%; /* Mengarah ke bagian bawah gambar login.jpeg */
             left: 5%;
+            width: 90%;
+            height: 60px;
             background: transparent;
             border: none;
             cursor: pointer;
             z-index: 10;
         }
-
-        .hint {
-            font-size: 14px;
-            margin-top: 10px;
-            opacity: 0.8;
-        }
     </style>
 </head>
 <body>
 
-    <div id="start-overlay" onclick="launchApp()">
-        <h1>Klik untuk Masuk</h1>
-        <p class="hint">(Otomatis Full Screen & Splash 10 Detik)</p>
+    <div id="overlay" onclick="startApp()">
+        <div>
+            <h2>Klik untuk Masuk</h2>
+            <p>Tampilan akan otomatis Full Screen</p>
+        </div>
     </div>
 
     <div class="app-container">
-        <div id="s1" class="scene active"><img src="splash1.jpg"></div>
-        <div id="s2" class="scene"><img src="splash2.jpg"></div>
-        <div id="s-login" class="scene">
-            <img src="login.jpg">
-            <button id="login-trigger" onclick="goDashboard(event)"></button>
+        <div id="s1" class="scene active">
+            <img src="splash1.jpeg" alt="Splash 1">
         </div>
-        <div id="s-dash" class="scene" onclick="showError()"><img src="dashboard.jpg"></div>
+
+        <div id="s2" class="scene">
+            <img src="splash2.jpeg" alt="Splash 2">
+        </div>
+
+        <div id="s3" class="scene">
+            <img src="login.jpeg" alt="Login Page">
+            <button id="login-btn" onclick="goToDashboard()"></button>
+        </div>
+
+        <div id="s4" class="scene" onclick="showMaintenance()">
+            <img src="dashboard.jpeg" alt="Dashboard">
+        </div>
     </div>
 
     <script>
-        const scene1 = document.getElementById('s1');
-        const scene2 = document.getElementById('s2');
-        const sceneLogin = document.getElementById('s-login');
-        const sceneDash = document.getElementById('s-dash');
-        const overlay = document.getElementById('start-overlay');
+        const s1 = document.getElementById('s1');
+        const s2 = document.getElementById('s2');
+        const s3 = document.getElementById('s3');
+        const s4 = document.getElementById('s4');
+        const overlay = document.getElementById('overlay');
 
-        function launchApp() {
-            // 1. Masuk Mode Full Screen
-            const doc = document.documentElement;
-            if (doc.requestFullscreen) doc.requestFullscreen();
-            else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen();
+        function startApp() {
+            // Aktifkan Fullscreen
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) { /* Safari */
+                elem.webkitRequestFullscreen();
+            }
 
-            // 2. Hilangkan Overlay
+            // Sembunyikan overlay
             overlay.style.display = 'none';
 
-            // 3. Alur Splash Screen
-            // Splash 1 tampil 5 detik lalu ke Splash 2
+            // Jalankan urutan splash screen
+            // 5 detik di Gambar 1
             setTimeout(() => {
-                swap(scene1, scene2);
+                changeScene(s1, s2);
                 
-                // Splash 2 tampil 5 detik lalu ke Halaman Login
+                // 5 detik di Gambar 2
                 setTimeout(() => {
-                    swap(scene2, sceneLogin);
+                    changeScene(s2, s3);
                 }, 5000);
 
             }, 5000);
         }
 
-        function swap(oldScene, newScene) {
-            oldScene.classList.remove('active');
+        function changeScene(outScene, inScene) {
+            outScene.classList.remove('active');
             setTimeout(() => {
-                newScene.classList.add('active');
+                inScene.classList.add('active');
             }, 50);
         }
 
-        function goDashboard(e) {
-            e.stopPropagation(); // Biar tidak trigger klik dashboard
-            swap(sceneLogin, sceneDash);
+        function goToDashboard() {
+            changeScene(s3, s4);
         }
 
-        function showError() {
+        function showMaintenance() {
             alert("Maaf, sistem sedang dalam perbaikan. Silakan coba lagi nanti.");
         }
     </script>
