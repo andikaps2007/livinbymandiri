@@ -3,19 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Livin Simulation</title>
+    <title>Simulasi Livin' by Mandiri</title>
     <style>
-        /* CSS untuk memastikan tampilan penuh dan tidak bisa di-scroll */
+        /* --- Reset & Layout Dasar --- */
         body, html {
             margin: 0;
             padding: 0;
             height: 100%;
             width: 100%;
-            overflow: hidden;
-            background-color: #004aad; /* Warna dasar biru */
-            font-family: sans-serif;
+            overflow: hidden; /* Mencegah scrollbar */
+            background-color: #004ead; /* Warna biru dasar Mandiri */
+            font-family: 'Segoe UI', sans-serif;
+            -webkit-tap-highlight-color: transparent; /* Hilangkan highlight klik di mobile */
         }
 
+        /* Container utama untuk menampung semua scene */
         .app-container {
             position: relative;
             width: 100%;
@@ -25,46 +27,93 @@
             align-items: center;
         }
 
-        /* Pengaturan gambar agar menutupi layar dengan rapi */
+        /* --- Gaya Umum Scene (Gambar) --- */
         .scene {
             position: absolute;
             width: 100%;
             height: 100%;
-            display: none;
+            display: none; /* Sembunyikan default */
             opacity: 0;
             transition: opacity 0.5s ease-in-out;
+            z-index: 1;
         }
 
+        /* Menampilkan gambar penuh sesuai layar (aspect ratio dipertahankan) */
         .scene img {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* Gambar akan memenuhi layar */
+            object-fit: cover; /* Gambar memenuhi layar, mungkin terpotong sedikit di sisi */
         }
 
+        /* Class untuk mengaktifkan scene */
         .scene.active {
             display: block;
             opacity: 1;
         }
 
-        /* Overlay Awal karena Browser melarang Fullscreen otomatis tanpa klik */
-        #overlay {
+        /* --- Gaya Popup "Fitur Tidak Tersedia" --- */
+        #popup-container {
+            position: fixed;
+            bottom: -100%; /* Sembunyikan di luar layar bawah default */
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white; /* Latar belakang popup putih */
+            z-index: 100; /* Pastikan di atas semua scene */
+            transition: bottom 0.5s ease-out; /* Efek muncul ke atas */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.2); /* Bayangan halus di atas */
+        }
+
+        /* Menampilkan gambar popup penuh di dalam containernya */
+        #popup-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* Pastikan seluruh gambar popup terlihat */
+        }
+
+        /* Class untuk memicu animasi muncul ke atas */
+        #popup-container.show {
+            bottom: 0; /* Pindahkan ke posisi normal */
+        }
+
+        /* Tombol 'X' untuk menutup popup (posisi estimasi di kanan atas) */
+        #close-popup-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 40px;
+            height: 40px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            z-index: 110;
+            /* background-color: rgba(255,0,0,0.3); */ /* Unkomen untuk melihat area klik tombol close */
+        }
+
+        /* --- Gaya Overlay & Tombol Klik --- */
+        
+        /* Overlay Awal (Syarat Browser untuk Fullscreen) */
+        #start-overlay {
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.85);
             color: white;
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 999;
+            z-index: 200;
             text-align: center;
             cursor: pointer;
         }
 
-        /* Area tombol login transparan (sesuaikan posisi jika perlu) */
-        #login-btn {
+        /* Tombol Login Transparan di Gambar 3 (login.jpeg) */
+        #login-click-area {
             position: absolute;
-            bottom: 8%; /* Mengarah ke bagian bawah gambar login.jpeg */
+            bottom: 8%; /* Mengarah ke tombol 'Login' di login.jpeg */
             left: 5%;
             width: 90%;
             height: 60px;
@@ -77,77 +126,106 @@
 </head>
 <body>
 
-    <div id="overlay" onclick="startApp()">
+    <div id="start-overlay" onclick="launchSimulation()">
         <div>
             <h2>Klik untuk Masuk</h2>
-            <p>Tampilan akan otomatis Full Screen</p>
+            <p>Tampilan akan otomatis Full Screen<br>dan Splash Screen dimulai.</p>
         </div>
     </div>
 
     <div class="app-container">
-        <div id="s1" class="scene active">
+        
+        <div id="scene1" class="scene active">
             <img src="splash1.jpeg" alt="Splash 1">
         </div>
 
-        <div id="s2" class="scene">
+        <div id="scene2" class="scene">
             <img src="splash2.jpeg" alt="Splash 2">
         </div>
 
-        <div id="s3" class="scene">
-            <img src="login.jpeg" alt="Login Page">
-            <button id="login-btn" onclick="goToDashboard()"></button>
+        <div id="scene3" class="scene">
+            <img src="login.jpeg" alt="Halaman Login">
+            <button id="login-click-area" onclick="masukDashboard(event)"></button>
         </div>
 
-        <div id="s4" class="scene" onclick="showMaintenance()">
-            <img src="dashboard.jpeg" alt="Dashboard">
+        <div id="scene4" class="scene" onclick="pemicuPopup()">
+            <img src="dashboard.jpeg" alt="Dashboard Utama">
         </div>
+
+    </div>
+
+    <div id="popup-container">
+        <img src="fitur-tidak-tersedia.jpeg" alt="Fitur Tidak Tersedia Popup">
+        
+        <button id="close-popup-btn" onclick="tutupPopup(event)"></button>
     </div>
 
     <script>
-        const s1 = document.getElementById('s1');
-        const s2 = document.getElementById('s2');
-        const s3 = document.getElementById('s3');
-        const s4 = document.getElementById('s4');
-        const overlay = document.getElementById('overlay');
+        // Referensi elemen HTML
+        const s1 = document.getElementById('scene1');
+        const s2 = document.getElementById('scene2');
+        const s3 = document.getElementById('scene3');
+        const s4 = document.getElementById('scene4');
+        const overlay = document.getElementById('start-overlay');
+        const popup = document.getElementById('popup-container');
 
-        function startApp() {
-            // Aktifkan Fullscreen
-            const elem = document.documentElement;
-            if (elem.requestFullscreen) {
-                elem.requestFullscreen();
-            } else if (elem.webkitRequestFullscreen) { /* Safari */
-                elem.webkitRequestFullscreen();
-            }
+        // --- Fungsi Alur Utama ---
 
-            // Sembunyikan overlay
+        // Fungsi pemicu awal: Aktifkan Fullscreen & Mulai Splash
+        function launchSimulation() {
+            // Minta izin Fullscreen ke browser
+            const doc = document.documentElement;
+            if (doc.requestFullscreen) doc.requestFullscreen();
+            else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen(); // Safari
+
+            // Sembunyikan overlay klik awal
             overlay.style.display = 'none';
 
-            // Jalankan urutan splash screen
-            // 5 detik di Gambar 1
+            // Mulai urutan splash screen
+            jalankanSplashSequence();
+        }
+
+        // Urutan Splash Screen otomatis
+        function jalankanSplashSequence() {
+            // Scene 1 aktif default selama 5 detik
+            
+            // Setelah 5 detik, ganti ke Scene 2
             setTimeout(() => {
-                changeScene(s1, s2);
+                swapScene(s1, s2);
                 
-                // 5 detik di Gambar 2
+                // Setelah 5 detik di Scene 2, ganti ke Scene 3 (Login)
                 setTimeout(() => {
-                    changeScene(s2, s3);
+                    swapScene(s2, s3);
                 }, 5000);
 
             }, 5000);
         }
 
-        function changeScene(outScene, inScene) {
-            outScene.classList.remove('active');
+        // Fungsi pembantu ganti scene dengan transisi halus
+        function swapScene(sceneKeluar, sceneMasuk) {
+            sceneKeluar.classList.remove('active');
             setTimeout(() => {
-                inScene.classList.add('active');
-            }, 50);
+                sceneMasuk.classList.add('active');
+            }, 50); // Jeda kecil untuk memicu transisi opacity
         }
 
-        function goToDashboard() {
-            changeScene(s3, s4);
+        // Fungsi tombol login di Halaman Login (Scene 3)
+        function masukDashboard(e) {
+            e.stopPropagation(); // Cegah trigger klik di background scene
+            swapScene(s3, s4); // Langsung ke Dashboard (Scene 4)
         }
 
-        function showMaintenance() {
-            alert("Maaf, sistem sedang dalam perbaikan. Silakan coba lagi nanti.");
+        // --- Fungsi Popup Fitur Tidak Tersedia ---
+
+        // Klik di Dashboard (Scene 4) untuk memunculkan popup
+        function pemicuPopup() {
+            popup.classList.add('show'); // Tambahkan class untuk memicu animasi muncul ke atas
+        }
+
+        // Klik tombol X di popup untuk menutup
+        function tutupPopup(e) {
+            e.stopPropagation(); // Cegah klik tembus ke dashboard di bawahnya
+            popup.classList.remove('show'); // Hapus class untuk memicu animasi turun kembali
         }
     </script>
 </body>
