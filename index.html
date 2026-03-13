@@ -3,38 +3,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Livin Web Simulation</title>
+    <title>Livin Simulation Fullscreen</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body, html { height: 100%; overflow: hidden; font-family: sans-serif; }
-
-        .screen {
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
             width: 100%;
-            height: 100vh;
-            display: none;
-            background-size: cover;
-            background-position: center;
-            position: relative;
+            overflow: hidden;
+            background-color: #000;
+            font-family: sans-serif;
         }
 
-        .active { display: block; }
+        .app-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
 
-        /* Area Tombol Login Transparan */
+        .scene {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.8s ease-in-out;
+        }
+
+        .scene.active {
+            display: block;
+            opacity: 1;
+        }
+
+        /* Identitas Gambar */
+        #scene-splash1 { background-image: url('1000093572.jpg'); cursor: pointer; }
+        #scene-splash2 { background-image: url('1000093573.jpg'); }
+        #scene-login { background-image: url('1000093574.jpg'); }
+        #scene-dashboard { background-image: url('1000093660.jpg'); }
+
+        /* Tombol Transparan Login */
         #login-btn {
             position: absolute;
-            bottom: 50px; /* Sesuaikan posisi tombol biru di gambar 3 */
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80%;
-            height: 60px;
-            background: rgba(255, 255, 255, 0); /* Transparan */
-            cursor: pointer;
+            bottom: 10%;
+            left: 5%;
+            width: 90%;
+            height: 50px;
+            background: transparent;
             border: none;
+            cursor: pointer;
+        }
+
+        /* Pesan instruksi awal */
+        #instruction {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            text-align: center;
+            color: white;
+            background: rgba(0,0,0,0.5);
+            z-index: 100;
+            padding: 10px 0;
         }
     </style>
 </head>
-<body>
+<body onclick="enableFullScreen()">
 
+    <div id="instruction">Klik di mana saja untuk mulai & Full Screen</div>
+
+    <div class="app-container">
+        <div id="scene-splash1" class="scene active"></div>
+
+        <div id="scene-splash2" class="scene"></div>
+
+        <div id="scene-login" class="scene">
+            <button id="login-btn" onclick="masukDashboard(event)"></button>
+        </div>
+
+        <div id="scene-dashboard" class="scene" onclick="tampilkanPerbaikan()"></div>
+    </div>
+
+    <script>
+        const s1 = document.getElementById('scene-splash1');
+        const s2 = document.getElementById('scene-splash2');
+        const login = document.getElementById('scene-login');
+        const dash = document.getElementById('scene-dashboard');
+        const instruction = document.getElementById('instruction');
+
+        let isStarted = false;
+
+        // FUNGSI FULLSCREEN
+        function enableFullScreen() {
+            if (!isStarted) {
+                const elem = document.documentElement;
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen();
+                } else if (elem.webkitRequestFullscreen) { /* Safari */
+                    elem.webkitRequestFullscreen();
+                } else if (elem.msRequestFullscreen) { /* IE11 */
+                    elem.msRequestFullscreen();
+                }
+                
+                instruction.style.display = 'none';
+                startApp();
+                isStarted = true;
+            }
+        }
+
+        function gantiScene(lama, baru) {
+            lama.classList.remove('active');
+            setTimeout(() => {
+                baru.classList.add('active');
+            }, 50);
+        }
+
+        // Jalankan transisi splash screen
+        function startApp() {
+            // Gambar 1 tampil selama 5 detik
+            setTimeout(() => {
+                gantiScene(s1, s2);
+                
+                // Gambar 2 tampil selama 5 detik
+                setTimeout(() => {
+                    gantiScene(s2, login);
+                }, 5000);
+
+            }, 5000);
+        }
+
+        function masukDashboard(e) {
+            e.stopPropagation(); // Mencegah trigger klik di background
+            gantiScene(login, dash);
+        }
+
+        function tampilkanPerbaikan() {
+            alert("Maaf, sistem sedang dalam perbaikan. Coba lagi nanti.");
+        }
+    </script>
+</body>
+</html>
     <div id="splash1" class="screen active" style="background-image: url('1.jpeg');"></div>
 
     <div id="splash2" class="screen" style="background-image: url('2.jpeg');"></div>
