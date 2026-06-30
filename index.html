@@ -44,6 +44,18 @@
             opacity: 1;
         }
 
+        /* Area tombol INVESTASI */
+        #investasi-btn {
+            position: absolute;
+            left: 72%;
+            top: 31%;
+            width: 16%;
+            height: 9%;
+            z-index: 20;
+            display: none;
+            background: transparent;
+        }
+
         #popup-container {
             position: fixed;
             bottom: -100%;
@@ -67,8 +79,7 @@
         }
     </style>
 </head>
-
-<body onclick="handleGlobalClick(event)" oncontextmenu="handleRightClick(event)">
+<body onclick="handleGlobalClick()">
 
     <div class="app-container">
 
@@ -86,12 +97,17 @@
 
         <div id="scene4" class="scene">
             <img src="dashboard.jpeg">
+            <div id="investasi-btn" onclick="masukDeposito(event)"></div>
+        </div>
+
+        <div id="scene5" class="scene">
+            <img src="Deposito.jpg">
         </div>
 
     </div>
 
     <div id="popup-container" onclick="tutupPopup(event)">
-        <img id="popup-image" src="fitur-tidak-tersedia.jpeg">
+        <img src="fitur-tidak-tersedia.jpeg">
     </div>
 
     <script>
@@ -99,13 +115,14 @@
         const s2 = document.getElementById('scene2');
         const s3 = document.getElementById('scene3');
         const s4 = document.getElementById('scene4');
+        const s5 = document.getElementById('scene5');
         const popup = document.getElementById('popup-container');
-        const popupImage = document.getElementById('popup-image');
+        const investasiBtn = document.getElementById('investasi-btn');
 
         let appStarted = false;
         let currentScene = 1;
 
-        function handleGlobalClick(e) {
+        function handleGlobalClick() {
             if (!appStarted) {
                 appStarted = true;
                 jalankanSplash();
@@ -114,18 +131,8 @@
 
             if (currentScene === 3) {
                 masukDashboard();
-            } 
-            else if (currentScene === 4 && !popup.classList.contains('show')) {
-                popupImage.src = "fitur-tidak-tersedia.jpeg";
-                pemicuPopup();
             }
-        }
-
-        function handleRightClick(e) {
-            e.preventDefault();
-
-            if (currentScene === 4 && !popup.classList.contains('show')) {
-                popupImage.src = "Deposito.jpg";
+            else if (currentScene === 4 && !popup.classList.contains('show')) {
                 pemicuPopup();
             }
         }
@@ -154,6 +161,13 @@
         function masukDashboard() {
             swapScene(s3, s4);
             currentScene = 4;
+            investasiBtn.style.display = "block";
+        }
+
+        function masukDeposito(e) {
+            e.stopPropagation();
+            swapScene(s4, s5);
+            currentScene = 5;
         }
 
         function pemicuPopup() {
