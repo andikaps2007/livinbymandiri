@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Simulasi</title>
+
     <style>
         body, html {
             margin: 0;
@@ -20,7 +21,7 @@
             position: relative;
             width: 100%;
             height: 100%;
-            cursor: pointer; /* Memberi indikasi seluruh layar bisa diklik */
+            cursor: pointer;
         }
 
         .scene {
@@ -43,7 +44,6 @@
             opacity: 1;
         }
 
-        /* Popup Full Layar Muncul ke Atas */
         #popup-container {
             position: fixed;
             bottom: -100%;
@@ -59,7 +59,7 @@
         #popup-container img {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* Dibuat full layar sesuai permintaan */
+            object-fit: cover;
         }
 
         #popup-container.show {
@@ -67,10 +67,11 @@
         }
     </style>
 </head>
-<body onclick="handleGlobalClick()">
+
+<body onclick="handleGlobalClick(event)" oncontextmenu="handleRightClick(event)">
 
     <div class="app-container">
-        
+
         <div id="scene1" class="scene active">
             <img src="splash1.jpeg">
         </div>
@@ -90,7 +91,7 @@
     </div>
 
     <div id="popup-container" onclick="tutupPopup(event)">
-        <img src="fitur-tidak-tersedia.jpeg">
+        <img id="popup-image" src="fitur-tidak-tersedia.jpeg">
     </div>
 
     <script>
@@ -99,34 +100,41 @@
         const s3 = document.getElementById('scene3');
         const s4 = document.getElementById('scene4');
         const popup = document.getElementById('popup-container');
+        const popupImage = document.getElementById('popup-image');
 
         let appStarted = false;
         let currentScene = 1;
 
-        function handleGlobalClick() {
-            // 1. Klik pertama kali untuk memulai splash sequence
+        function handleGlobalClick(e) {
             if (!appStarted) {
                 appStarted = true;
                 jalankanSplash();
                 return;
             }
 
-            // 2. Jika sedang di halaman Login (Scene 3), klik di mana saja masuk Dashboard
             if (currentScene === 3) {
                 masukDashboard();
             } 
-            // 3. Jika sedang di Dashboard (Scene 4), klik di mana saja muncul popup
             else if (currentScene === 4 && !popup.classList.contains('show')) {
+                popupImage.src = "fitur-tidak-tersedia.jpeg";
+                pemicuPopup();
+            }
+        }
+
+        function handleRightClick(e) {
+            e.preventDefault();
+
+            if (currentScene === 4 && !popup.classList.contains('show')) {
+                popupImage.src = "Deposito.jpg";
                 pemicuPopup();
             }
         }
 
         function jalankanSplash() {
-            // Splash 1 sudah tampil (Scene 1)
             setTimeout(() => {
                 swapScene(s1, s2);
                 currentScene = 2;
-                
+
                 setTimeout(() => {
                     swapScene(s2, s3);
                     currentScene = 3;
@@ -137,6 +145,7 @@
 
         function swapScene(outScene, inScene) {
             outScene.classList.remove('active');
+
             setTimeout(() => {
                 inScene.classList.add('active');
             }, 50);
@@ -156,5 +165,6 @@
             popup.classList.remove('show');
         }
     </script>
+
 </body>
 </html>
