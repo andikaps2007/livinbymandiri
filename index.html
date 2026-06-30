@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Simulasi</title>
-
     <style>
         body, html {
             margin: 0;
@@ -91,7 +90,7 @@
     </div>
 
     <div id="popup-container" onclick="tutupPopup(event)">
-        <img id="popup-image" src="fitur-tidak-tersedia.jpeg">
+        <img src="fitur-tidak-tersedia.jpeg">
     </div>
 
     <script>
@@ -100,7 +99,6 @@
         const s3 = document.getElementById('scene3');
         const s4 = document.getElementById('scene4');
         const popup = document.getElementById('popup-container');
-        const popupImage = document.getElementById('popup-image');
 
         let appStarted = false;
         let currentScene = 1;
@@ -116,7 +114,6 @@
                 masukDashboard();
             } 
             else if (currentScene === 4 && !popup.classList.contains('show')) {
-                popupImage.src = "fitur-tidak-tersedia.jpeg";
                 pemicuPopup();
             }
         }
@@ -124,9 +121,8 @@
         function handleRightClick(e) {
             e.preventDefault();
 
-            if (currentScene === 4 && !popup.classList.contains('show')) {
-                popupImage.src = "Deposito.jpg";
-                pemicuPopup();
+            if (currentScene === 4) {
+                s4.innerHTML = '<img src="Deposito.jpg">';
             }
         }
 
@@ -165,6 +161,5 @@
             popup.classList.remove('show');
         }
     </script>
-
 </body>
 </html>
